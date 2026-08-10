@@ -1,0 +1,29 @@
+# Rust / Cargo build artifacts
+target/
+bin/
+obj/
+dist/
+
+# Visual Studio / MSVC
+.vs/
+*.user
+*.pdb
+
+# Teşhis yakalamaları (büyük; repo'ya girmez)
+tools/captures/
+tools/soundcore-decompiled/
+tools/soundcore.apk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# İşletim sistemi artıkları
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Ortam değişkenleri / gizli dosyalar
+.env
+.env.*

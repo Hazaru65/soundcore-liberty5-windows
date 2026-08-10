@@ -1,0 +1,32 @@
+{
+  "deviceNamePattern": "soundcore Liberty 5",
+  "controlServiceUuid": "0cf12d31-fac3-4553-bd80-d6832e7b3957",
+  "eqPresets": {},
+  "commands": {
+    "deviceInfo": {
+      "command": 257,
+      "payloads": { "request": "" }
+    },
+    "anc": {
+      "command": 33030,
+      "payloads": {
+        "On": "001000010001",
+        "Transparency": "011000010001",
+        "Off": "021000010001"
+      }
+    },
+    "gameMode": {
+      "command": 34064,
+      "payloads": {
+        "On": "01",
+        "Off": "00"
+      }
+    },
+    "battery": {
+      "command": 769,
+      "payloads": {
+        "request": ""
+      }
+    }
+  }
+}

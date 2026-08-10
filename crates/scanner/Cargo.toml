@@ -1,0 +1,15 @@
+[package]
+name = "scanner"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "scanner"
+path = "src/main.rs"
+
+[dependencies]
+soundcore-lib5-core = { path = "../soundcore-lib5-core" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "signal"] }
+clap = { version = "4", features = ["derive"] }
+hex = "0.4"
+uuid = "1"

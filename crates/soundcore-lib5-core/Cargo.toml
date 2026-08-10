@@ -1,0 +1,15 @@
+[package]
+name = "soundcore-lib5-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+btleplug = "0.12"
+futures-util = "0.3"
+tokio = { version = "1", features = ["rt", "macros", "time", "sync"] }
+serde = { version = "1", features = ["derive"] }
+windows = { version = "0.62", features = ["Devices_Bluetooth", "Devices_Bluetooth_Rfcomm", "Devices_Enumeration", "Foundation_Collections", "Networking", "Networking_Sockets", "Storage_Streams"] }
+serde_json = "1"
+uuid = { version = "1", features = ["serde"] }
+hex = "0.4"
+thiserror = "1"

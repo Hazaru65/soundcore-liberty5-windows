@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Soundcore Liberty 5</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="header"><div><p class="eyebrow">SOUNDCORE</p><h1>Liberty 5</h1></div><span id="connection" class="status">Bağlı değil</span></header>
+    <section class="card connection-card">
+      <label for="device">Cihaz</label>
+      <div class="row"><select id="device" aria-label="Liberty 5 cihazı"></select><button id="refresh" class="secondary">Yenile</button></div>
+      <button id="connect" class="primary" disabled>Bağlan</button>
+    </section>
+    <section class="card">
+      <div class="section-title"><h2>Pil</h2><span id="battery-time">—</span></div>
+      <div class="battery-grid"><div><span>Sol</span><strong id="battery-left">—</strong></div><div><span>Sağ</span><strong id="battery-right">—</strong></div><div><span>Kutu</span><strong id="battery-case">—</strong></div></div>
+    </section>
+    <section class="card controls" aria-label="Ses kontrolleri">
+      <div class="section-title"><h2>ANC</h2><span id="anc-value">—</span></div>
+      <div class="segmented"><button data-anc="Off">Kapalı</button><button data-anc="Transparency">Şeffaflık</button><button data-anc="On">Açık</button></div>
+      <div class="toggle-row"><label for="game-mode">Game Mode</label><input id="game-mode" type="checkbox" role="switch"></div>
+      <label for="eq">EQ ön ayarı</label><select id="eq" disabled><option>Doğrulanmış preset yok</option></select>
+    </section>
+    <section class="card log-card"><div class="section-title"><h2>Günlük</h2><button id="clear-log" class="link-button">Temizle</button></div><pre id="log" aria-live="polite"></pre></section>
+  </main>
+</body>
+</html>

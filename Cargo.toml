@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["crates/soundcore-lib5-core", "crates/scanner", "src-tauri"]
