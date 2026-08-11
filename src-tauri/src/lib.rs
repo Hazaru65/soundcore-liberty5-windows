@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use soundcore_lib5_core::{
-    find_liberty_devices, AncMode, BatteryStatus, CommandProfile, Liberty5Device,
+    find_liberty_devices, AncMode, BatteryStatus, BleError, CommandProfile, Liberty5Device,
 };
 use serde::Serialize;
 use tauri::{
@@ -33,25 +33,40 @@ impl AppState {
     }
 }
 
-fn user_error(error: impl std::fmt::Display) -> String {
-    error.to_string()
+#[derive(Serialize)]
+struct ApiError {
+    code: &'static str,
+    detail: String,
+}
+
+impl ApiError {
+    fn new(code: &'static str, detail: String) -> Self {
+        Self { code, detail }
+    }
+    fn not_connected() -> Self {
+        Self::new("not_connected", String::new())
+    }
+}
+
+fn api_error(error: BleError) -> ApiError {
+    ApiError::new(error.code(), error.detail())
 }
 
 #[tauri::command]
-async fn list_devices() -> Result<Vec<soundcore_lib5_core::LibertyDeviceInfo>, String> {
-    find_liberty_devices().await.map_err(user_error)
+async fn list_devices() -> Result<Vec<soundcore_lib5_core::LibertyDeviceInfo>, ApiError> {
+    find_liberty_devices().await.map_err(api_error)
 }
 
 #[tauri::command]
-async fn connect(state: State<'_, AppState>, app: AppHandle) -> Result<(), String> {
+async fn connect(state: State<'_, AppState>, app: AppHandle) -> Result<(), ApiError> {
     if let Some(handle) = state.battery_poll.lock().await.take() {
         handle.abort();
     }
     if let Some(mut old) = state.device.lock().await.take() {
         let _ = old.disconnect().await;
     }
-    let mut device = Liberty5Device::open(Arc::clone(&state.profile)).await.map_err(user_error)?;
-    let info = device.read_device_info().await.map_err(user_error)?;
+    let mut device = Liberty5Device::open(Arc::clone(&state.profile)).await.map_err(api_error)?;
+    let info = device.read_device_info().await.map_err(api_error)?;
     let anc_mode = info.anc_mode.clone();
     *state.anc_mode.lock().await = match anc_mode.as_deref() {
         Some("Transparency") => AncMode::Transparency,
@@ -67,7 +82,7 @@ async fn connect(state: State<'_, AppState>, app: AppHandle) -> Result<(), Strin
     let status = {
         let mut guard = state.device.lock().await;
         match guard.as_mut() {
-            Some(device) => Some(device.read_battery().await.map_err(user_error)?),
+            Some(device) => Some(device.read_battery().await.map_err(api_error)?),
             None => None,
         }
     };
@@ -96,49 +111,49 @@ async fn connect(state: State<'_, AppState>, app: AppHandle) -> Result<(), Strin
 }
 
 #[tauri::command]
-async fn disconnect(state: State<'_, AppState>, app: AppHandle) -> Result<(), String> {
+async fn disconnect(state: State<'_, AppState>, app: AppHandle) -> Result<(), ApiError> {
     if let Some(handle) = state.battery_poll.lock().await.take() {
         handle.abort();
     }
     if let Some(mut device) = state.device.lock().await.take() {
-        device.disconnect().await.map_err(user_error)?;
+        device.disconnect().await.map_err(api_error)?;
     }
     let _ = app.emit("connection", false);
     Ok(())
 }
 
 #[tauri::command]
-async fn set_anc(state: State<'_, AppState>, mode: String, app: AppHandle) -> Result<(), String> {
-    let mode = AncMode::parse(&mode).map_err(user_error)?;
+async fn set_anc(state: State<'_, AppState>, mode: String, app: AppHandle) -> Result<(), ApiError> {
+    let mode = AncMode::parse(&mode).map_err(api_error)?;
     let mut guard = state.device.lock().await;
-    let device = guard.as_mut().ok_or_else(|| "Önce bir Liberty 5 cihazına bağlanın".to_string())?;
-    device.set_anc(mode).await.map_err(user_error)?;
+    let device = guard.as_mut().ok_or_else(ApiError::not_connected)?;
+    device.set_anc(mode).await.map_err(api_error)?;
     *state.anc_mode.lock().await = mode;
     let _ = app.emit("anc", mode.as_str());
     Ok(())
 }
 
 #[tauri::command]
-async fn set_game_mode(state: State<'_, AppState>, enabled: bool, app: AppHandle) -> Result<(), String> {
+async fn set_game_mode(state: State<'_, AppState>, enabled: bool, app: AppHandle) -> Result<(), ApiError> {
     let mut guard = state.device.lock().await;
-    let device = guard.as_mut().ok_or_else(|| "Önce bir Liberty 5 cihazına bağlanın".to_string())?;
-    device.set_game_mode(enabled).await.map_err(user_error)?;
+    let device = guard.as_mut().ok_or_else(ApiError::not_connected)?;
+    device.set_game_mode(enabled).await.map_err(api_error)?;
     let _ = app.emit("game-mode", enabled);
     Ok(())
 }
 
 #[tauri::command]
-async fn set_eq_preset(state: State<'_, AppState>, preset_id: String) -> Result<(), String> {
+async fn set_eq_preset(state: State<'_, AppState>, preset_id: String) -> Result<(), ApiError> {
     let mut guard = state.device.lock().await;
-    let device = guard.as_mut().ok_or_else(|| "Önce bir Liberty 5 cihazına bağlanın".to_string())?;
-    device.set_eq_preset(&preset_id).await.map_err(user_error)
+    let device = guard.as_mut().ok_or_else(ApiError::not_connected)?;
+    device.set_eq_preset(&preset_id).await.map_err(api_error)
 }
 
 #[tauri::command]
-async fn read_battery(state: State<'_, AppState>, app: AppHandle) -> Result<BatteryStatus, String> {
+async fn read_battery(state: State<'_, AppState>, app: AppHandle) -> Result<BatteryStatus, ApiError> {
     let mut guard = state.device.lock().await;
-    let device = guard.as_mut().ok_or_else(|| "Önce bir Liberty 5 cihazına bağlanın".to_string())?;
-    let status = device.read_battery().await.map_err(user_error)?;
+    let device = guard.as_mut().ok_or_else(ApiError::not_connected)?;
+    let status = device.read_battery().await.map_err(api_error)?;
     let _ = app.emit("battery", &status);
     Ok(status)
 }
@@ -166,13 +181,31 @@ async fn get_capabilities(state: State<'_, AppState>) -> Result<FeatureAvailabil
     })
 }
 
+#[tauri::command]
+fn set_language(app: AppHandle, lang: String) -> Result<(), String> {
+    let menu = tray_menu(&app, &lang).map_err(|e| e.to_string())?;
+    if let Some(tray) = app.tray_by_id("main") {
+        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+fn tray_menu(app: &tauri::AppHandle, lang: &str) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
+    let (show, disconnect, anc_cycle, quit) = if lang == "tr" {
+        ("Pencereyi Göster", "Bağlantıyı Kes", "ANC Döngüsü", "Çıkış")
+    } else {
+        ("Show Window", "Disconnect", "Cycle ANC", "Quit")
+    };
+    MenuBuilder::new(app)
+        .text("show", show)
+        .text("disconnect", disconnect)
+        .text("anc-cycle", anc_cycle)
+        .text("quit", quit)
+        .build()
+}
+
 fn build_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let menu = MenuBuilder::new(app)
-        .text("show", "Pencereyi Göster")
-        .text("disconnect", "Bağlantıyı Kes")
-        .text("anc-cycle", "ANC Döngüsü")
-        .text("quit", "Çıkış")
-        .build()?;
+    let menu = tray_menu(app.handle(), "tr")?;
     let tray = TrayIconBuilder::with_id("main")
         .menu(&menu)
         .show_menu_on_left_click(false)
@@ -233,6 +266,7 @@ pub fn run() {
             read_battery,
             get_eq_presets,
             get_capabilities,
+            set_language,
         ])
         .setup(build_tray)
         .run(tauri::generate_context!())

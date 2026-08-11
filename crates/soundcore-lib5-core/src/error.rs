@@ -17,3 +17,26 @@ pub enum BleError {
     #[error("Windows Bluetooth API hatası: {0}")]
     Windows(#[from] windows::core::Error),
 }
+
+impl BleError {
+    pub fn code(&self) -> &'static str {
+        match self {
+            BleError::Bluetooth(_) => "ble",
+            BleError::NotFound => "not_found",
+            BleError::NotSupported => "not_supported",
+            BleError::Profile(_) => "profile",
+            BleError::InvalidAncMode(_) => "invalid_anc",
+            BleError::Connection(_) => "connection",
+            BleError::Windows(_) => "windows",
+        }
+    }
+
+    pub fn detail(&self) -> String {
+        match self {
+            BleError::Bluetooth(e) => e.to_string(),
+            BleError::NotFound | BleError::NotSupported => String::new(),
+            BleError::Profile(s) | BleError::InvalidAncMode(s) | BleError::Connection(s) => s.clone(),
+            BleError::Windows(e) => e.to_string(),
+        }
+    }
+}
