@@ -1,0 +1,36 @@
+name: Build Windows release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build and publish installer
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: src-tauri
+          tagName: v__VERSION__
+          releaseName: Soundcore Liberty 5 v__VERSION__
+          releaseBody: |
+            Windows installer for Soundcore Liberty 5 v__VERSION__.
+
+            This is an experimental, unofficial hobby project. Use it at your own risk.
+          releaseDraft: true
+          prerelease: false
+          generateReleaseNotes: true

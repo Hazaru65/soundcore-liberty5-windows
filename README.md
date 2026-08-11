@@ -11,7 +11,7 @@ The app provides a simple interface to:
 - Check the battery levels of the left earbud, right earbud, and charging case.
 - Switch between active noise cancellation, transparency, and off modes.
 - Toggle Game Mode.
-- Select verified equalizer presets when available.
+- Equalizer support is still under development and is not currently available.
 - Keep the application available from the Windows system tray.
 
 ## Project status
