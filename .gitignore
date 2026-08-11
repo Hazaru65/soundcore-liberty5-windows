@@ -27,3 +27,7 @@ Desktop.ini
 # Ortam değişkenleri / gizli dosyalar
 .env
 .env.*
+
+Claude.md
+.claude/CLAUDE.md
+AGENTS.md
