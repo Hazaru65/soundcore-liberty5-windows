@@ -16,6 +16,8 @@ html, body { margin: 0; min-width: 360px; height: 100%; overflow: hidden; }
 #view-control .status.online::before { background: #2e9e5b; }
 /* Decorative product art must not intercept header controls. */
 .control-view .connection-card img { pointer-events: none; }
+/* Battery labels and values sit on the same text baseline (different font sizes). */
+#battery-status > div { align-items: baseline; }
 /* Dil değişince pill metni genişleyip switch'i itmesin: sabit genişlik + ortalı metin */
 #view-control #connection { min-width: 84px; text-align: center; }
 /* Dil anahtarı: kayan gösterge + aktif renk */
