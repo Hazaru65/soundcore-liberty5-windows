@@ -2,7 +2,8 @@ use std::time::Duration;
 
 use tokio::time::timeout;
 use uuid::Uuid;
-use windows::core::GUID;
+use windows::core::{GUID, HSTRING, Interface};
+use windows::Foundation::IPropertyValue;
 use windows::Devices::Bluetooth::Rfcomm::{RfcommDeviceService, RfcommServiceId};
 use windows::Devices::Enumeration::DeviceInformation;
 use windows::Networking::Sockets::StreamSocket;
@@ -38,13 +39,43 @@ pub struct RfcommSession {
 
 impl RfcommSession {
     /// Liberty 5 kontrol servisine (profildeki `controlServiceUuid`) bağlanır.
-    pub async fn open(service_uuid: &Uuid) -> Result<Self, BleError> {
+    pub async fn open(service_uuid: &Uuid, device_address: &str) -> Result<Self, BleError> {
         let service_id = RfcommServiceId::FromUuid(to_guid(service_uuid))?;
         let selector = RfcommDeviceService::GetDeviceSelector(&service_id)?;
         let devices = DeviceInformation::FindAllAsyncAqsFilter(&selector)?.await?;
-        let Some(info) = devices.into_iter().next() else {
-            return Err(BleError::NotFound);
-        };
+        let normalized_address = device_address.to_ascii_lowercase().replace(':', "");
+        let mut matched_info = None;
+        if !normalized_address.is_empty() {
+            for candidate in devices {
+                let id_matches = candidate
+                    .Id()
+                    .map(|id| id.to_string().to_ascii_lowercase().replace(':', "").contains(&normalized_address))
+                    .unwrap_or(false);
+                let property_matches = if id_matches {
+                    false
+                } else {
+                    candidate
+                        .Properties()
+                        .ok()
+                        .and_then(|properties| properties.Lookup(&HSTRING::from("System.Devices.DeviceAddress")).ok())
+                        .and_then(|value| {
+                            let property: IPropertyValue = value.cast().ok()?;
+                            property
+                                .GetUInt64()
+                                .map(|address| format!("{address:012x}"))
+                                .or_else(|_| property.GetString().map(|text| text.to_string()))
+                                .ok()
+                        })
+                        .map(|value| value.to_ascii_lowercase().replace(':', "").contains(&normalized_address))
+                        .unwrap_or(false)
+                };
+                if id_matches || property_matches {
+                    matched_info = Some(candidate);
+                    break;
+                }
+            }
+        }
+        let info = matched_info.ok_or(BleError::NotFound)?;
         let service = RfcommDeviceService::FromIdAsync(&info.Id()?)?.await?;
         let socket = StreamSocket::new()?;
         socket

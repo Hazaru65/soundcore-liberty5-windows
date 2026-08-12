@@ -58,14 +58,14 @@ async fn list_devices() -> Result<Vec<soundcore_lib5_core::LibertyDeviceInfo>, A
 }
 
 #[tauri::command]
-async fn connect(state: State<'_, AppState>, app: AppHandle) -> Result<(), ApiError> {
+async fn connect(state: State<'_, AppState>, app: AppHandle, device_address: String) -> Result<(), ApiError> {
     if let Some(handle) = state.battery_poll.lock().await.take() {
         handle.abort();
     }
     if let Some(mut old) = state.device.lock().await.take() {
         let _ = old.disconnect().await;
     }
-    let mut device = Liberty5Device::open(Arc::clone(&state.profile)).await.map_err(api_error)?;
+    let mut device = Liberty5Device::open(Arc::clone(&state.profile), &device_address).await.map_err(api_error)?;
     let info = device.read_device_info().await.map_err(api_error)?;
     let anc_mode = info.anc_mode.clone();
     *state.anc_mode.lock().await = match anc_mode.as_deref() {
@@ -268,6 +268,16 @@ pub fn run() {
             get_capabilities,
             set_language,
         ])
+        .on_window_event(|window, event| {
+            // Uygulama sabit 9:16 telefon penceresi: fullscreen'i geri al,
+            // boyutu her zaman 405x720 mantıksal piksele sabitle.
+            if let tauri::WindowEvent::Resized(_) = event {
+                if window.is_fullscreen().unwrap_or(false) {
+                    let _ = window.set_fullscreen(false);
+                }
+                let _ = window.set_size(tauri::LogicalSize::new(405.0, 720.0));
+            }
+        })
         .setup(build_tray)
         .run(tauri::generate_context!())
         .expect("Tauri uygulaması başlatılamadı");

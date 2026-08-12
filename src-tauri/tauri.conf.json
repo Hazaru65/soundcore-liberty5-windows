@@ -12,9 +12,12 @@
       {
         "label": "main",
         "title": "Soundcore Liberty 5",
-        "width": 480,
-        "height": 640,
-        "resizable": false
+        "width": 405,
+        "height": 720,
+        "resizable": false,
+        "maximizable": false,
+        "fullscreen": false,
+        "center": true
       }
     ],
     "security": {

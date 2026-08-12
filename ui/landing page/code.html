@@ -1,0 +1,244 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Acoustix Pro - Device Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "inverse-surface": "#2d3037",
+                "tertiary-container": "#bd5700",
+                "outline": "#717785",
+                "on-secondary-fixed-variant": "#2d476f",
+                "inverse-on-surface": "#eef0fa",
+                "secondary-container": "#b6d0ff",
+                "on-primary-container": "#fefcff",
+                "on-secondary-container": "#3f5881",
+                "on-error-container": "#93000a",
+                "surface-bright": "#f9f9ff",
+                "on-primary": "#ffffff",
+                "on-tertiary": "#ffffff",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed": "#d6e3ff",
+                "on-secondary-fixed": "#001b3d",
+                "on-tertiary-container": "#fffbff",
+                "on-surface": "#181c22",
+                "on-background": "#181c22",
+                "surface-container": "#ebedf7",
+                "surface-container-highest": "#e0e2eb",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed": "#321200",
+                "on-secondary": "#ffffff",
+                "surface-variant": "#e0e2eb",
+                "surface": "#f9f9ff",
+                "primary": "#005ab4",
+                "on-surface-variant": "#414753",
+                "error": "#ba1a1a",
+                "surface-tint": "#005db8",
+                "background": "#f9f9ff",
+                "secondary": "#465f88",
+                "inverse-primary": "#aac7ff",
+                "tertiary-fixed": "#ffdbc9",
+                "on-primary-fixed-variant": "#00458d",
+                "secondary-fixed": "#d6e3ff",
+                "surface-container-high": "#e6e8f1",
+                "primary-fixed-dim": "#aac7ff",
+                "outline-variant": "#c1c6d5",
+                "on-tertiary-fixed-variant": "#763400",
+                "tertiary": "#964400",
+                "secondary-fixed-dim": "#aec7f7",
+                "surface-container-low": "#f1f3fc",
+                "primary-container": "#0a73e0",
+                "on-primary-fixed": "#001b3e",
+                "tertiary-fixed-dim": "#ffb68c",
+                "surface-dim": "#d7dae3",
+                "error-container": "#ffdad6"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "xs": "4px",
+                "sm": "8px",
+                "md": "16px",
+                "lg": "24px",
+                "unit": "2px",
+                "xl": "32px",
+                "container-margin-mobile": "20px",
+                "container-margin-desktop": "40px",
+                "glass-padding": "24px"
+        },
+        "fontFamily": {
+                "headline-md": ["Plus Jakarta Sans", "Inter"],
+                "headline-lg": ["Plus Jakarta Sans", "Inter"],
+                "display-lg-mobile": ["Plus Jakarta Sans"],
+                "display-lg": ["Plus Jakarta Sans"],
+                "body-md": ["Plus Jakarta Sans", "Inter"],
+                "body-lg": ["Plus Jakarta Sans", "Inter"],
+                "label-md": ["Inter"],
+                "label-sm": ["Inter"]
+        },
+        "fontSize": {
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-lg-mobile": ["32px", {lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700"}],
+                "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "label-sm": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}]
+        }
+      },
+    },
+  }
+</script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 8px 32px -4px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+        
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-button {
+            background: linear-gradient(135deg, rgba(0, 90, 180, 0.8), rgba(0, 115, 224, 0.9));
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px 0 rgba(0, 90, 180, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-button:hover {
+            box-shadow: 0 12px 32px 0 rgba(0, 90, 180, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .bg-gradient-mesh {
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(214, 227, 255, 0.7) 0%, transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(170, 199, 255, 0.5) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(249, 249, 255, 1) 0%, rgba(240, 242, 250, 1) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-gradient-mesh min-h-screen text-on-surface font-body-md overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- Top App Bar (Modified for transactional context: no navigation) -->
+<header class="w-full top-0 left-0 sticky backdrop-blur-[24px] border-b border-white/20 shadow-sm flex items-center justify-between px-container-margin-mobile md:px-container-margin-desktop py-4 z-50 bg-white/10">
+<div class="flex items-center gap-2 text-primary font-headline-md text-headline-md-mobile md:text-headline-md tracking-tight">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">graphic_eq</span>
+<span class="">Liberty</span>
+</div>
+<div class="flex items-center gap-3">
+<!-- Connection Status -->
+<div class="hidden md:flex items-center gap-1.5 glass-pill px-3 py-1.5 rounded-full text-label-sm font-label-sm">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-on-surface-variant">Not connected</span>
+</div>
+<!-- Custom Language Toggle per prompt requirements -->
+<div class="flex items-center gap-2 glass-pill px-3 py-1.5 rounded-full text-label-sm font-label-sm cursor-pointer hover:bg-white/60 transition-colors">
+<span class="text-primary">EN</span>
+<span class="text-outline-variant">|</span>
+<span class="text-on-surface-variant">TR</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="container mx-auto px-container-margin-mobile md:px-container-margin-desktop flex flex-col items-center justify-center min-h-[calc(100vh-80px)] py-4">
+<div class="w-full max-w-lg glass-panel rounded-3xl p-glass-padding md:p-8 flex flex-col items-center relative overflow-hidden mb-4">
+<!-- Atmospheric Glow behind image -->
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-primary-fixed/60 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+<div class="absolute bottom-1/4 right-1/4 w-48 h-48 bg-secondary-fixed/40 rounded-full blur-[60px] -z-10 pointer-events-none"></div>
+<div class="text-center mb-4">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-2">Connect Your Device</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Select your Acoustix device to berlgin configuration.</p>
+</div>
+<!-- Product Image -->
+<div class="w-full h-72 relative mb-10 flex items-center justify-center mb-4">
+<img alt="Soundcore Liberty 5 earbuds in black case" class="max-w-full max-h-full object-contain drop-shadow-2xl z-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFM3K3WR20MvpKkHmsYKjvvprezNHJv2qhPTJK0Lw6ng6nxpevmJyLr8d-Jim6J9DromGflIgT4nYFsBOaLdXSrSMBvSq1DuxzpjjjNAZ4HXuaoPf5xQXp7oznqShCmeyfa01srA-BlpIBmXmFsX09sXe1wsRGrzE1ngdoCuurUoSMvajm503wJHDvq2vBt0cHgmfypkra7f9VLJsqhoXi61RGAV0ur7POj4aJsb5Hq4kzwdoQkJNT9XcgQOyTjNuaY-8DiTCu0dqvpA">
+</div>
+<!-- Device Selector -->
+<div class="w-full relative mb-4">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-2 ml-2">AVAILABLE DEVICES</label>
+<div class="w-full glass-panel rounded-xl flex items-center justify-between p-4 cursor-pointer hover:bg-white/50 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-white/40 border border-white/30 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary">headphones</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Acoustix Liberty 5</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Ready to pair</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
+</div>
+</div>
+<!-- Connect Action -->
+<button class="w-full glass-button rounded-full py-4 px-8 flex items-center justify-center gap-2 text-on-primary font-headline-md text-body-lg font-semibold tracking-wide">
+<span class="">Connect</span>
+<span class="material-symbols-outlined">bluetooth</span>
+</button>
+<button class="mt-4 font-body-md text-body-md text-outline hover:text-on-surface transition-colors">
+                Trouble connecting?
+            </button>
+</div>
+</main>
+<!-- Navigation Suppressed for Transactional Intent -->
+<!-- The BottomNavBar and side navigations are intentionally omitted as this is a setup/linear flow. -->
+
+
+</body></html>

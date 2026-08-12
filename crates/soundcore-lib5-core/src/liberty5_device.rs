@@ -56,13 +56,14 @@ const RETRY_DELAY: Duration = Duration::from_millis(1500);
 pub struct Liberty5Device {
     session: Option<RfcommSession>,
     profile: Arc<CommandProfile>,
+    device_address: String,
 }
 
 impl Liberty5Device {
     /// Liberty 5 kontrol servisine RFCOMM üzerinden bağlanır.
-    pub async fn open(profile: Arc<CommandProfile>) -> Result<Self, BleError> {
-        let session = RfcommSession::open(&profile.control_service_uuid).await?;
-        Ok(Self { session: Some(session), profile })
+    pub async fn open(profile: Arc<CommandProfile>, device_address: &str) -> Result<Self, BleError> {
+        let session = RfcommSession::open(&profile.control_service_uuid, device_address).await?;
+        Ok(Self { session: Some(session), profile, device_address: device_address.to_string() })
     }
 
     /// Komut gönderir; taşıyıcı hatasında (0x800710DD gibi) oturumu yeniden
@@ -73,7 +74,7 @@ impl Liberty5Device {
         loop {
             attempts += 1;
             if self.session.is_none() {
-                self.session = Some(RfcommSession::open(&self.profile.control_service_uuid).await?);
+                self.session = Some(RfcommSession::open(&self.profile.control_service_uuid, &self.device_address).await?);
             }
             match self.session.as_mut().expect("oturum açık").command(command, payload).await {
                 Ok(frames) => return Ok(frames),
@@ -170,7 +171,7 @@ impl Liberty5Device {
 
     async fn ensure_session(&mut self) -> Result<&mut RfcommSession, BleError> {
         if self.session.is_none() {
-            self.session = Some(RfcommSession::open(&self.profile.control_service_uuid).await?);
+            self.session = Some(RfcommSession::open(&self.profile.control_service_uuid, &self.device_address).await?);
         }
         Ok(self.session.as_mut().expect("oturum açık"))
     }

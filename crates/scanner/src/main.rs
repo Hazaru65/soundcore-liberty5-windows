@@ -84,9 +84,9 @@ async fn run(cli: Cli) -> Result<(), i32> {
             }
         }
         Command::Dump { device } => {
-            select_device(&device).await?;
+            let selected = select_device(&device).await?;
             println!("RFCOMM kontrol kanalına bağlanılıyor ({}), cihaz bilgisi isteniyor...", profile.control_service_uuid);
-            let mut session = Liberty5Device::open(std::sync::Arc::new(profile)).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
+            let mut session = Liberty5Device::open(std::sync::Arc::new(profile), &selected.info.address).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
             match session.read_device_info().await {
                 Ok(info) => {
                     println!("seri: {}", info.serial.unwrap_or_else(|| "-".to_string()));
@@ -98,9 +98,9 @@ async fn run(cli: Cli) -> Result<(), i32> {
             }
         }
         Command::Monitor { device, seconds } => {
-            select_device(&device).await?;
+            let selected = select_device(&device).await?;
             println!("RFCOMM dinleniyor ({seconds} saniye)...");
-            let mut session = Liberty5Device::open(std::sync::Arc::new(profile)).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
+            let mut session = Liberty5Device::open(std::sync::Arc::new(profile), &selected.info.address).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
             match session.monitor(Duration::from_secs(seconds)).await {
                 Ok(frames) => {
                     if frames.is_empty() { println!("çerçeve alınamadı"); }
@@ -117,7 +117,7 @@ async fn run(cli: Cli) -> Result<(), i32> {
                 eprintln!("Hata: --force zorunludur. Doğrulanmamış yazımlar cihaza zarar verebilir.");
                 return Err(1);
             }
-            select_device(&device).await?;
+            let selected = select_device(&device).await?;
             let command = parse_u16_hex(&command_hex).map_err(|error| { eprintln!("{error}"); 1 })?;
             let payload = hex::decode(&payload_hex).map_err(|error| { eprintln!("payload geçersiz hex: {error}"); 1 })?;
             print!("komut=0x{command:04x} payload={} gönderilecek. Devam? (e/H) ", hex(&payload));
@@ -125,7 +125,7 @@ async fn run(cli: Cli) -> Result<(), i32> {
             let mut input = String::new();
             io::stdin().read_line(&mut input).ok();
             if !input.trim().eq_ignore_ascii_case("e") { println!("iptal edildi"); return Ok(()); }
-            let mut session = Liberty5Device::open(std::sync::Arc::new(profile)).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
+            let mut session = Liberty5Device::open(std::sync::Arc::new(profile), &selected.info.address).await.map_err(|error| { eprintln!("Bağlantı başarısız: {error}"); 1 })?;
             match session.send_raw(command, &payload).await {
                 Ok(frames) => {
                     if frames.is_empty() { println!("yanıt alınamadı"); }

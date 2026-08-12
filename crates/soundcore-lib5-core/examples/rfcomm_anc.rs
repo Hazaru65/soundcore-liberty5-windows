@@ -14,13 +14,15 @@ use soundcore_lib5_core::{AncMode, CommandProfile, Liberty5Device};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mode = std::env::args().nth(1).unwrap_or_else(|| "status".to_string());
+    let mut args = std::env::args().skip(1);
+    let mode = args.next().unwrap_or_else(|| "status".to_string());
+    let device_address = args.next().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "device address argument required"))?;
     let profile = Arc::new(CommandProfile::embedded()?);
 
     match mode.as_str() {
         "sequence" => {
             println!(">> sequence: baglan -> device-info -> ANC-off -> ANC-on");
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let info = device.read_device_info().await?;
             println!("seri={:?} firmware={:?} anc={:?}", info.serial, info.firmware, info.anc_mode);
             device.set_anc(AncMode::Off).await?;
@@ -32,11 +34,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             device.disconnect().await?;
             println!("sequence basarili");
         }
-        "anc" => set_mode(profile, AncMode::On).await?,
-        "trans" => set_mode(profile, AncMode::Transparency).await?,
-        "off" => set_mode(profile, AncMode::Off).await?,
+        "anc" => set_mode(profile, &device_address, AncMode::On).await?,
+        "trans" => set_mode(profile, &device_address, AncMode::Transparency).await?,
+        "off" => set_mode(profile, &device_address, AncMode::Off).await?,
         "game-on" | "game-off" => {
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let payload = if mode == "game-on" { vec![0x01] } else { vec![0x00] };
             let frames = device.send_raw(0x8510, &payload).await?;
             report(&mode, &frames);
@@ -45,13 +47,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "eq01" | "eq02" | "eq03" | "eq00" => {
             let id = match mode.as_str() { "eq01" => 1, "eq02" => 2, "eq03" => 3, _ => 0 };
             let payload = eq_payload(id);
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let frames = device.send_raw(0x8703, &payload).await?;
             report(&mode, &frames);
             device.disconnect().await?;
         }
         "preset" => {
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             for (label, payload) in [
                 ("preset-on-1", vec![0x01, 0x01, 0x01]),
                 ("preset-on-2", vec![0x01, 0x01, 0x02]),
@@ -64,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             device.disconnect().await?;
         }
         "battery" => {
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let frames = device.send_raw(0x0301, &[]).await?;
             report("0x0301 istek", &frames);
             println!(">> 10 sn bildirim dinleniyor...");
@@ -76,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         "features" => {
             // Uygulamanin kullandigi kutuphane yollari: read_battery + set_game_mode
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let battery = device.read_battery().await?;
             println!("pil: sol={:?} sag={:?} kutu={:?}", battery.left, battery.right, battery.case);
             device.set_game_mode(true).await?;
@@ -89,7 +91,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             device.disconnect().await?;
             println!("features basarili");
         }
-        "statdiff" => {            let mut device = Liberty5Device::open(profile).await?;
+        "statdiff" => {            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let before = device.send_raw(0x9403, &[]).await?;
             println!("0x9403 once:");
             for f in &before { println!("  cmd=0x{:04x} payload={}", f.command, hex(f)); }
@@ -114,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         _ => {
             println!(">> status: device-info");
-            let mut device = Liberty5Device::open(profile).await?;
+            let mut device = Liberty5Device::open(profile, &device_address).await?;
             let info = device.read_device_info().await?;
             println!("seri={:?} firmware={:?} anc={:?}", info.serial, info.firmware, info.anc_mode);
             device.disconnect().await?;
@@ -151,8 +153,8 @@ fn eq_payload(id: u8) -> Vec<u8> {
     bytes
 }
 
-async fn set_mode(profile: Arc<CommandProfile>, mode: AncMode) -> Result<(), Box<dyn std::error::Error>> {
-    let mut device = Liberty5Device::open(profile).await?;
+async fn set_mode(profile: Arc<CommandProfile>, device_address: &str, mode: AncMode) -> Result<(), Box<dyn std::error::Error>> {
+    let mut device = Liberty5Device::open(profile, device_address).await?;
     device.set_anc(mode).await?;
     println!("ANC {} OK", mode.as_str());
     device.disconnect().await?;
