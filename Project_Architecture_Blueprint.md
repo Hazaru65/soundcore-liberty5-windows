@@ -267,7 +267,7 @@ if frames.iter().any(|f| f.command == command_code && f.payload.is_empty()) {
   - **Name filter**: case-insensitive `contains("liberty")` on local/advertisement names.
   - **Name enrichment cascade**: advertised name → WinRT cached name (`BluetoothLEDevice::FromBluetoothAddressAsync`) → temporary GATT connect (2 s timeout) to refresh btleplug properties → `"Bluetooth {address}"` fallback.
   - **Discovery fallback**: scan adapters first (`collect_liberty` per adapter, `merge_unique` by `device_id`); if empty, `start_scan` 5 s, collect, stop scan.
-  - **Paired fallback** (`find_liberty_devices`): BLE advertising first; else `paired_liberty_devices()` — WinRT enumeration of paired classic (BR/EDR) and LE devices, dedupe by name (classic preferred), address via `BluetoothAddress`.
+  - **Paired first** (`find_liberty_devices`): `paired_liberty_devices()` first (WinRT enumeration of paired classic BR/EDR and LE devices, dedupe by name, address via `BluetoothAddress`) for instant startup listing; falls back to BLE advertising scan (`find_liberty_peripherals`) only when paired list is empty.
 - **Data**: `LibertyDeviceInfo { device_id, name, address, connected }` (camelCase-serialized for IPC).
 
 #### `GattSession` — BLE LE diagnostics (`gatt_session.rs`)
@@ -588,7 +588,7 @@ flowchart LR
 - **CI**: `.github/workflows/release.yml` — triggered on `v*` tags; `windows-latest` runner; `tauri-action@v1` with `projectPath: src-tauri`; draft release with generated release notes; `GITHUB_TOKEN` write permission.
 - **Runtime topology**: single Windows desktop process; WebView2 for UI; Bluetooth Classic RFCOMM to the earbuds; tray-resident (close ≠ exit).
 - **Environment adaptations**: none — one target OS (Windows), no multi-env config, no cloud services, no containers.
-- **Identifier**: `com.vibec.soundcore-liberty5`; versioned in lockstep (`0.4.1` in `tauri.conf.json` + Cargo.toml).
+- **Identifier**: `com.vibec.soundcore-liberty5`; versioned in lockstep (`0.5.0` in `tauri.conf.json` + Cargo.toml).
 
 ---
 

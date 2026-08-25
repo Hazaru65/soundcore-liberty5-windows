@@ -81,12 +81,9 @@ pub async fn find_liberty_peripherals() -> Result<Vec<DiscoveredDevice>, BleErro
 }
 
 pub async fn find_liberty_devices() -> Result<Vec<LibertyDeviceInfo>, BleError> {
-    let ble = find_liberty_peripherals().await?;
-    if !ble.is_empty() {
-        return Ok(ble.into_iter().map(|device| device.info).collect());
-    }
-    // BLE reklamı yoksa (uyku/kutu modu) eşleştirilmiş cihaz listesine düş:
-    // cihaz canlı olmasa bile Windows adını saklar.
+    // Önce Windows eşleştirme listesi: zaten bağlı/eşleştirilmiş cihaz, BLE reklamı
+    // vermese bile anında bulunur (kontrol kanalı RFCOMM olduğu için eşleştirme şarttır).
+    // Bu, açılışta 5s BLE taramasını beklemeyi engeller.
     #[cfg(windows)]
     {
         let paired = paired_liberty_devices().await;
@@ -94,7 +91,12 @@ pub async fn find_liberty_devices() -> Result<Vec<LibertyDeviceInfo>, BleError> 
             return Ok(paired);
         }
     }
-    Ok(Vec::new())
+
+    // Eşleştirilmiş cihaz yoksa (henüz eşleştirilmemiş/yeni) BLE reklam taramasına düş.
+    Ok(find_liberty_peripherals().await?
+        .into_iter()
+        .map(|device| device.info)
+        .collect())
 }
 
 /// Windows eşleştirme listesinden "liberty" adlı cihazları toplar; cihazın o an
