@@ -208,6 +208,17 @@
     if ($("battery-case")) $("battery-case").textContent = value.case == null ? "—" : `${value.case}%`;
   }
 
+  // Background polling is sparse (30 s); refresh immediately when the window
+  // comes forward. A successful read makes the backend emit the "battery" event.
+  async function refreshBattery() {
+    if (!invoke || !state.connected) return;
+    try {
+      await invoke("read_battery");
+    } catch (_) {
+      // Sessiz: başarısız okuma gezintiyi engellememeli.
+    }
+  }
+
   function setAncActive(mode) {
     document.querySelectorAll("[data-anc]").forEach((button) => {
       const active = mode != null && button.dataset.anc === mode;
@@ -340,6 +351,10 @@
       try { await invoke("set_eq_preset", { presetId: event.target.value }); } catch (error) { setNotice($("control-notice"), I18n.t("msg.actionFailed", { error: fmtError(error) }), true); }
     });
     window.addEventListener("i18n:change", applyLanguage);
+    window.addEventListener("focus", refreshBattery);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshBattery();
+    });
   }
 
   async function init() {

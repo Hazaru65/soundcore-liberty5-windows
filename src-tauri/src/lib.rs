@@ -12,8 +12,42 @@ use tauri::{
 };
 use tokio::sync::Mutex;
 
-/// Pil yoklama aralığı (cihaz %10 kademeli raporlar).
+/// Background battery poll interval (the device reports in 10% steps).
 const BATTERY_POLL_SECONDS: u64 = 30;
+/// Fast poll interval used while the window is visible and focused.
+const BATTERY_POLL_ACTIVE_SECONDS: u64 = 2;
+/// Delay before the follow-up read taken when a bud looks absent (possible link change).
+const BATTERY_FOLLOWUP_MS: u64 = 1000;
+
+/// Poll fast while the user is looking at the window, slow in the background:
+/// one round trip costs ~100 ms, so the fast mode is only armed when the window
+/// is visible and focused.
+fn battery_poll_interval(app: &AppHandle) -> Duration {
+    let active = app
+        .get_webview_window("main")
+        .map(|window| window.is_visible().unwrap_or(false) && window.is_focused().unwrap_or(false))
+        .unwrap_or(false);
+    Duration::from_secs(if active { BATTERY_POLL_ACTIVE_SECONDS } else { BATTERY_POLL_SECONDS })
+}
+
+/// A bud that is still in the case (or not linked yet) is reported as 0xFF and
+/// decodes to None, which is also what a just-changed link can look like: the
+/// first poll after the change may still return the old byte. Re-read once after
+/// a short delay so the transition is caught without waiting for the next period.
+async fn read_battery_followup(
+    device: Arc<Mutex<Option<Liberty5Device>>>,
+    status: BatteryStatus,
+) -> BatteryStatus {
+    if status.left.is_some() && status.right.is_some() && status.case.is_some() {
+        return status;
+    }
+    tokio::time::sleep(Duration::from_millis(BATTERY_FOLLOWUP_MS)).await;
+    let mut guard = device.lock().await;
+    match guard.as_mut() {
+        Some(device) => device.read_battery().await.unwrap_or(status),
+        None => status,
+    }
+}
 
 pub struct AppState {
     pub device: Arc<Mutex<Option<Liberty5Device>>>,
@@ -78,7 +112,7 @@ async fn connect(state: State<'_, AppState>, app: AppHandle, device_address: Str
     let _ = app.emit("device-info", info);
     let _ = app.emit("anc", anc_mode.unwrap_or_else(|| "On".to_string()));
 
-    // İlk pil okuması + bağlıyken 30 sn'de bir yoklama.
+    // Initial battery read plus periodic polling while connected (2 s while visible, 30 s in the background).
     let status = {
         let mut guard = state.device.lock().await;
         match guard.as_mut() {
@@ -93,13 +127,17 @@ async fn connect(state: State<'_, AppState>, app: AppHandle, device_address: Str
     let app_handle = app.clone();
     let handle = tokio::spawn(async move {
         loop {
-            tokio::time::sleep(Duration::from_secs(BATTERY_POLL_SECONDS)).await;
+            tokio::time::sleep(battery_poll_interval(&app_handle)).await;
             let status = {
                 let mut guard = device_arc.lock().await;
                 match guard.as_mut() {
                     Some(device) => device.read_battery().await.ok(),
                     None => break,
                 }
+            };
+            let status = match status {
+                Some(status) => Some(read_battery_followup(Arc::clone(&device_arc), status).await),
+                None => None,
             };
             if let Some(status) = status {
                 let _ = app_handle.emit("battery", &status);
