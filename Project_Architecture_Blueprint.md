@@ -588,7 +588,7 @@ flowchart LR
 - **CI**: `.github/workflows/release.yml` — triggered on `v*` tags; `windows-latest` runner; `tauri-action@v1` with `projectPath: src-tauri`; draft release with generated release notes; `GITHUB_TOKEN` write permission.
 - **Runtime topology**: single Windows desktop process; WebView2 for UI; Bluetooth Classic RFCOMM to the earbuds; tray-resident (close ≠ exit).
 - **Environment adaptations**: none — one target OS (Windows), no multi-env config, no cloud services, no containers.
-- **Identifier**: `com.vibec.soundcore-liberty5`; versioned in lockstep (`0.5.0` in `tauri.conf.json` + Cargo.toml).
+- **Identifier**: `com.vibec.soundcore-liberty5`; versioned in lockstep (`0.5.1` in `tauri.conf.json` + Cargo.toml).
 
 ---
 
